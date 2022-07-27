@@ -1,0 +1,17 @@
+extends base
+
+block emailContent
+  p You made a new purchase
+
+  table
+  tr
+    th Product
+    th Price
+    th Quantity
+  each product in products
+    tr
+      td #{product.product.title}
+      td #{product.product.price}
+      td #{product.quantity}
+  
+  p The total price is #{totalPrice}
