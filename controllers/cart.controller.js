@@ -59,8 +59,6 @@ const addProductToCart = catchAsync(async (req, res, next) => {
             productId,
             quantity
         });
-
-        res.status(200).json({ status: 'success' });
     } else {
         // Cart already exists
         // Check if product already exists in cart

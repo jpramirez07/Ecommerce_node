@@ -4,11 +4,12 @@ const { Products } = require('../models/product.model');
 // Utils
 const { catchAsync } = require('../utils/catchAsync.util');
 const { AppError } = require('../utils/appError.util');
+const { ProductImg } = require('../models/productIms.model');
 
 const productExists = catchAsync(async (req, res, next) => {
     const { id } = req.params;
 
-    const product = await Products.findOne({ where: { id, status: 'active' } });
+    const product = await Products.findOne({ where: { id, status: 'active' }, include: ProductImg });
 
     if (!product) {
     return next(new AppError('Could not find product by given id', 404));

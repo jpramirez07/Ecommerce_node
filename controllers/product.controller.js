@@ -1,11 +1,13 @@
 const { Products } = require("../models/product.model");
-const { Carts } = require("../models/cart.model");
+const { ProductImg } = require("../models/productIms.model");
 const { Category } = require("../models/category.model");
 
-const { catchAsync } = require("../utils/catchAsync.util");
+const { ref, uploadBytes, getDownloadURL } = require('firebase/storage')
 
+const { catchAsync } = require("../utils/catchAsync.util");
 const { AppError } = require("../utils/appError.util");
-const { User } = require("../models/user.model");
+const { storage } = require('../utils/firebase.util');
+
 
 const createNewProduct = catchAsync(async (req, res, next) => {
     const { title, description, quantity, price, categoryId } = req.body;
@@ -19,6 +21,22 @@ const createNewProduct = catchAsync(async (req, res, next) => {
         categoryId,
         userId: sessionUser.id, //take the id by logged user
     });
+
+    if (req.files.length > 0) {
+		const filesPromises = req.files.map(async file => {
+			const imgRef = ref(storage, `products/${Date.now()}_${file.originalname}`);
+			const imgRes = await uploadBytes(imgRef, file.buffer);
+
+			return await ProductImg.create({
+				productId: newProduct.id,
+				imgUrl: imgRes.metadata.fullPath,
+			});
+		});
+
+		await Promise.all(filesPromises);
+	}
+
+    
 
     res.status(200).json({
         status: "success",
@@ -39,6 +57,16 @@ const getAllProducts = catchAsync(async (req, res, next) => {
 
 const getProductById = catchAsync(async (req, res, next) => {
     const { product } = req;
+
+    const productImgsPromises = product.productImgs.map(async productImg => {
+		const imgRef = ref(storage, productImg.imgUrl);
+
+		const imgFullPath = await getDownloadURL(imgRef);
+
+		productImg.imgUrl = imgFullPath;
+	});
+
+	await Promise.all(productImgsPromises);
 
     res.status(200).json({
         status: "success",

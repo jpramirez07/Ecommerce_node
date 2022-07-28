@@ -24,6 +24,8 @@ const {
 } = require('../middlewares/product.middleware');
 const { categoryExists } = require('../middlewares/category.middleware')
 
+const { upload } = require('../utils/upload.util')
+
 const router = express.Router();
 
 router.get('/', getAllProducts);
@@ -34,7 +36,7 @@ router.get('/:id', productExists, getProductById);
 
 router.use(protectSession);
 
-router.post('/', createProductValidations, checkValidations, createNewProduct);
+router.post('/', upload.array('productImg', 5),createProductValidations, checkValidations, createNewProduct);
 
 router.post('/categories', createCategories);
 
